@@ -7,10 +7,12 @@ frontend/yarn-error.log*
 frontend/pnpm-debug.log*
 frontend/lerna-debug.log*
 
+# Yarn/frontend stuff
 frontend/node_modules
 frontend/dist
 frontend/dist-ssr
 frontend/*.local
+frontend/.yarn
 
 # Editor directories and files
 frontend/.vscode/*

@@ -1,0 +1,99 @@
+services:
+  # The nginx web server, used to serve static files and expose the backend code to the web.
+  web:
+    depends_on:
+      bb-backend:
+        condition: service_healthy
+    restart: on-failure
+    ports:
+      - "9008:80"
+    expose:
+      - "9008"
+    volumes:
+      - ./frontend/public:/etc/nginx/public:ro
+    build: ./deploy/nginx
+    develop:
+      watch:
+        - action: sync+restart
+          path: ./deploy/nginx/conf.d
+          target: /etc/nginx/conf.d
+        - action: sync+restart
+          path: ./deploy/nginx/nginx.conf
+          target: /etc/nginx/nginx.conf
+    networks:
+      - web
+      - actual
+
+  # Node.js serving the backend:
+  bb-backend:
+    container_name: bb-backend
+    depends_on:
+      mongo:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl --fail 'http://localhost:9009'"]
+      interval: 10s
+      retries: 5
+      start_period: 30s
+      timeout: 10s
+    # Define the DATABASE_URL in terms of the secret:
+    secrets:
+      - db_password
+    environment:
+      - APPLICATION_DATABASE=betabetter
+    entrypoint: [
+      '/bin/sh', '-c',
+      'export DATABASE_PASSWORD=$$(cat /var/run/secrets/db_password) ; export DATABASE_URL="mongodb+srv://root:${DATABASE_PASSWORD}@mongo/${APPLICATION_DATABASE}" ; npm run start:prod'
+    ]
+    build:
+      context: ./backend
+      target: production
+    ports:
+      - "9009:9009"
+    expose:
+      - "9009"
+    develop:
+      watch:
+        - action: sync
+          path: ./backend/
+          target: /app/
+    networks:
+      - web
+      - db
+  mongo:
+    image: mongo:latest
+    restart: on-failure
+    healthcheck:
+      test: ["CMD-SHELL", "/usr/bin/mongosh --eval 'db.runCommand(\"ping\").ok' localhost:27017/betabetter --quiet"]
+      interval: 10s
+      retries: 5
+      start_period: 30s
+      timeout: 10s
+    secrets:
+      - db_password
+    ports:
+      - "27017:27017"
+    expose:
+      - "27017"
+    volumes:
+      - ./deploy/mongo:/etc/mongo:ro
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MONGO_INITDB_DATABASE=betabetter
+#   Include the root passwords from the secret file
+    entrypoint: [
+      '/bin/sh', '-c',
+      'export MONGO_INITDB_ROOT_PASSWORD=$$(cat /var/run/secrets/db_password) ; /usr/local/bin/docker-entrypoint.sh mongod'
+    ]
+    networks:
+      - db
+
+secrets:
+  db_password:
+    file: secret_db_password.txt
+
+networks:
+  actual:
+    driver: bridge
+  web:
+  db:

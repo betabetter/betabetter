@@ -19,3 +19,6 @@ frontend/.vscode/*
 frontend/!.vscode/extensions.json
 frontend/.idea
 frontend/.DS_Store
+
+# Never commit secrets!
+secret*.txt

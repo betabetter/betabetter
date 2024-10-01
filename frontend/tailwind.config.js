@@ -11,6 +11,9 @@ export default {
             'body': ['Ubuntu'],
             'sans': ['Ubuntu', 'system-ui', 'sans-serif']
         },
+        colors: {
+          'bb-blue': '#3C78D8'
+        }
     },
     plugins: [],
 }

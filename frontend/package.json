@@ -10,7 +10,7 @@
     "preview": "vite preview",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
-    "init-msw": "msw init public/"
+    "init-msw": "msw init msw/"
   },
   "dependencies": {
     "@slate-yjs/core": "^1.0.2",
@@ -57,5 +57,10 @@
       "plugin:storybook/recommended"
     ]
   },
-  "packageManager": "yarn@4.1.1"
+  "packageManager": "yarn@4.5.0",
+  "msw": {
+    "workerDirectory": [
+      "msw"
+    ]
+  }
 }

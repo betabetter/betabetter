@@ -1,0 +1,3 @@
+[submodule "deploy/nginx"]
+	path = deploy/nginx
+	url = https://github.com/betabetter/nginx-config.git
